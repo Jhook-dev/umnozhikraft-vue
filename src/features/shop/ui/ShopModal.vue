@@ -60,6 +60,9 @@ const closeShop = () => gameStore.closeShop();
 const resetProgress = () => gameStore.resetProgress();
 
 const buyItem = (item) => {
+  if (gameStore.state.diamonds >= item.price) {
+    gameStore.toast('Покупка! ' + item.name + ' — твои!');
+  }
   gameStore.buyItem(item, shopTab.value);
 };
 
