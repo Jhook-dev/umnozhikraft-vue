@@ -93,6 +93,9 @@ body{
 #hud-diamonds.pop{animation:pop .35s;}
 @keyframes pop{40%{transform:scale(1.35)}}
 #hud-combo{color:#ffb04a;}
+#hud-accuracy{color:#9ecbff;}
+#hud-accuracy.good{color:#9dff5e;}
+#hud-accuracy.bad{color:#e5483f;}
 #btn-shop,#btn-mute{font-size:12px; padding:11px 14px;}
 
 /* ---------- СЦЕНА ШАХТЫ ---------- */
@@ -154,6 +157,18 @@ body{
                  radial-gradient(circle at 70% 62%, #43e0c0 0 10%, transparent 11%),
                  radial-gradient(circle at 50% 84%, #9ffef0 0 8%, transparent 9%), var(--stone);
                  filter:drop-shadow(0 0 14px rgba(67,224,192,.55));}
+.block--gold   {background:radial-gradient(circle at 28% 32%, #ffe59a 0 11%, transparent 12%),
+                 radial-gradient(circle at 70% 62%, #ffc93c 0 10%, transparent 11%),
+                 radial-gradient(circle at 50% 84%, #ffd96b 0 8%, transparent 9%), var(--stone);
+                 filter:drop-shadow(0 0 12px rgba(255,201,60,.5));}
+.block--emerald{background:radial-gradient(circle at 28% 32%, #7dffb0 0 11%, transparent 12%),
+                 radial-gradient(circle at 70% 62%, #2ecc71 0 10%, transparent 11%),
+                 radial-gradient(circle at 50% 84%, #58d68d 0 8%, transparent 9%), var(--stone);
+                 filter:drop-shadow(0 0 12px rgba(46,204,113,.5));}
+.block--redstone{background:radial-gradient(circle at 28% 32%, #ff6b6b 0 11%, transparent 12%),
+                 radial-gradient(circle at 70% 62%, #e74c3c 0 10%, transparent 11%),
+                 radial-gradient(circle at 50% 84%, #ec7063 0 8%, transparent 9%), var(--stone);
+                 filter:drop-shadow(0 0 10px rgba(231,76,60,.4));}
 /* Трещины: 🖼️ СПРАЙТ — сюда идеально встанут destroy_stage0..2.png из MC */
 .cracks{position:absolute; inset:0; pointer-events:none;}
 .cracks i{position:absolute; inset:0; opacity:0; transition:opacity .2s;}
@@ -243,7 +258,7 @@ body{
 <section id="screen-start">
   <div style="position:relative">
     <h1 class="logo">УМНОЖИ<b>КРАФТ</b></h1>
-    <span class="splash">⛏ Теперь с алмазами!</span>
+    <span class="splash">🎯 Точность: следи за %!</span>
   </div>
   <p class="start-note">Решай примеры — ломай блоки! Отметь таблицы, которые хочешь тренировать (можно несколько):</p>
 
@@ -280,6 +295,7 @@ body{
     </div>
     <div class="slot" id="hud-diamonds">💎 <span id="hud-dia">0</span></div>
     <div class="slot" id="hud-combo" hidden>🔥 ×<span id="hud-streak">0</span></div>
+    <div class="slot" id="hud-accuracy" title="Точность ответов">🎯 <span id="hud-acc">100%</span></div>
     <button class="btn-mc btn-gold" id="btn-shop">🛒 МАГАЗИН</button>
     <button class="btn-mc" id="btn-mute" title="Звук">🔊</button>
   </header>
@@ -346,11 +362,14 @@ const CONFIG = {
   unlockByLevel: {2:4, 3:5, 4:6, 5:7, 6:8, 7:9},
 
   blocks: [
-    {id:'grass',  cls:'block--grass',  name:'Земля',         hp:1, minDepth:0,  dia:.08, diaMax:1, xp:8},
-    {id:'stone',  cls:'block--stone',  name:'Камень',        hp:2, minDepth:3,  dia:.12, diaMax:1, xp:10},
-    {id:'coal',   cls:'block--coal',   name:'Угольная руда', hp:2, minDepth:8,  dia:.4,  diaMax:1, xp:12},
-    {id:'iron',   cls:'block--iron',   name:'Железная руда', hp:3, minDepth:15, dia:.65, diaMax:2, xp:15},
-    {id:'diamond',cls:'block--diamond',name:'Алмазная руда', hp:4, minDepth:24, dia:1,   diaMax:3, xp:25},
+    {id:'grass',   cls:'block--grass',   name:'Земля',         hp:1, minDepth:0,  dia:.08, diaMax:1, xp:8},
+    {id:'stone',   cls:'block--stone',   name:'Камень',        hp:2, minDepth:3,  dia:.12, diaMax:1, xp:10},
+    {id:'coal',    cls:'block--coal',    name:'Угольная руда', hp:2, minDepth:8,  dia:.4,  diaMax:1, xp:12},
+    {id:'iron',    cls:'block--iron',    name:'Железная руда', hp:3, minDepth:15, dia:.65, diaMax:2, xp:15},
+    {id:'gold',    cls:'block--gold',    name:'Золотая руда',  hp:3, minDepth:20, dia:.75, diaMax:2, xp:18},
+    {id:'emerald', cls:'block--emerald', name:'Изумрудная руда',hp:4,minDepth:28, dia:.85, diaMax:2, xp:22},
+    {id:'redstone',cls:'block--redstone',name:'Редстоун',      hp:3, minDepth:18, dia:.55, diaMax:2, xp:16, effect:'speed'},
+    {id:'diamond', cls:'block--diamond', name:'Алмазная руда', hp:4, minDepth:24, dia:1,   diaMax:3, xp:25},
   ],
 
   mobs: [
@@ -392,6 +411,7 @@ function freshState(baseTables){
     streak:0, sinceMob:0, nextMobAt: 999,
     pick:'wood', skin:'classic', ownedPicks:['wood'], ownedSkins:['classic'],
     retry:[], muted:false,
+    totalAnswers:0, correctAnswers:0,
   };
 }
 function save(){ localStorage.setItem(CONFIG.saveKey, JSON.stringify(state)); }
@@ -403,6 +423,9 @@ function loadSave(){
     if(!('progression' in s)) s.progression = true; // старым сохранениям продолжаем цепочку открытий
     // ✨ ЗВУК: по умолчанию звук включён, если не указано иное
     if(typeof s.muted === 'undefined') s.muted = false;
+    // ✨ СТАТИСТИКА: добавляем поля точности для старых сохранений
+    if(typeof s.totalAnswers === 'undefined') s.totalAnswers = 0;
+    if(typeof s.correctAnswers === 'undefined') s.correctAnswers = 0;
     return s;
   }catch(e){ return null; }
 }
@@ -631,6 +654,18 @@ function renderHUD(){
   const combo=$('hud-combo');
   if(state.streak>=2){ combo.hidden=false; $('hud-streak').textContent=state.streak; } else combo.hidden=true;
 }
+function updateAccuracy(){
+  const accEl = $('hud-accuracy');
+  const accSpan = $('hud-acc');
+  if(state.totalAnswers === 0){
+    accSpan.textContent = '100%';
+    accEl.className = 'slot';
+    return;
+  }
+  const pct = Math.round(state.correctAnswers / state.totalAnswers * 100);
+  accSpan.textContent = pct + '%';
+  accEl.className = 'slot' + (pct >= 80 ? ' good' : pct < 50 ? ' bad' : '');
+}
 function renderMiner(){
   $('minerSprite').innerHTML=''; $('minerSprite').appendChild(Sprites.miner());
   $('hat').textContent = CONFIG.skins.find(s=>s.id===state.skin).hat;
@@ -749,7 +784,9 @@ let currentMob=null;
 
 function onAnswer(btn,value){
   if(busy) return;
+  state.totalAnswers++;
   if(value===problem.correct){
+    state.correctAnswers++;
     btn.classList.add('correct');
     document.querySelectorAll('.answer').forEach(b=>b.disabled=true);
     $('equation').classList.add('solved');
@@ -780,6 +817,7 @@ function onAnswer(btn,value){
     }
     renderHUD();
   }
+  updateAccuracy();
   save();
 }
 
@@ -797,13 +835,23 @@ function hitBlock(){
 }
 function blockColors(id){
   return {grass:['#7a4f2a','#67b93c','#5c3a1e'], stone:['#8d8d8d','#6f6f6f'],
-    coal:['#1c1c1c','#8d8d8d'], iron:['#e2b183','#8d8d8d'], diamond:['#43e0c0','#9ffef0','#8d8d8d']}[id];
+    coal:['#1c1c1c','#8d8d8d'], iron:['#e2b183','#8d8d8d'], 
+    gold:['#ffc93c','#ffd96b','#ffe59a'], emerald:['#2ecc71','#58d68d','#7dffb0'],
+    redstone:['#e74c3c','#ec7063','#ff6b6b'],
+    diamond:['#43e0c0','#9ffef0','#8d8d8d']}[id];
 }
 function breakBlock(){
   Sound.play('breakB');
   burst($('block'), blockColors(block.id), 22);
   $('block').classList.add('boom');
   state.depth++;
+  
+  // Эффекты редких блоков
+  if(block.effect==='speed'){
+    state.streak = Math.min(state.streak + 2, 10);
+    floatText($('block'), '⚡ СКОРОСТЬ! +2 к серии', 'good');
+  }
+  
   if(Math.random()<block.dia) giveDiamonds(randInt(1,block.diaMax));
   CONFIG.blocks.forEach(b=>{
     if(b.minDepth===state.depth) toast('⛏ Новая руда открыта: '+b.name.toUpperCase()+'!');
@@ -954,7 +1002,7 @@ document.querySelectorAll('.presets .btn-mc').forEach(b=>{
 /* ---------------------- СТАРТ И СВЯЗКИ ---------------------- */
 function enterGame(){
   $('screen-start').hidden=true; $('screen-game').hidden=false;
-  renderMiner(); renderHUD(); spawnBlock(); showProblem();
+  renderMiner(); renderHUD(); updateAccuracy(); spawnBlock(); showProblem();
 }
 $('btn-play').addEventListener('click',()=>{
   Sound.init();
