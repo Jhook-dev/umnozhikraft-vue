@@ -419,6 +419,8 @@ const shuffle = arr => { for(let i=arr.length-1;i>0;i--){ const j=randInt(0,i); 
    ================================================================ */
 const Sound = {
   ctx:null,
+  musicPlaying:false,
+  musicOscillators:[],
   FILES:{
     dig:     null, // ← 'sounds/dig_stone.ogg'
     breakB:  null, // ← 'sounds/break_stone.ogg'
@@ -434,6 +436,95 @@ const Sound = {
     if(!this.ctx) this.ctx = new (window.AudioContext||window.webkitAudioContext)();
     // 🔊 Разблокируем AudioContext после жеста пользователя (требование браузеров)
     if(this.ctx.state === 'suspended') this.ctx.resume().catch(()=>{});
+  },
+  startMusic(){
+    if(this.musicPlaying || (state && state.muted)) return;
+    this.init();
+    this.musicPlaying = true;
+    this._playAmbientLoop();
+  },
+  stopMusic(){
+    this.musicPlaying = false;
+    this.musicOscillators.forEach(o => {
+      try { o.stop(); o.disconnect(); } catch(e){}
+    });
+    this.musicOscillators = [];
+  },
+  _playAmbientLoop(){
+    const c = this.ctx;
+    const now = c.currentTime;
+    const scale = [196.00, 220.00, 246.94, 261.63, 293.66, 329.63, 392.00, 440.00];
+    const bassScale = [49.00, 55.00, 61.74, 65.41];
+    
+    const masterGain = c.createGain();
+    masterGain.gain.value = 0.08;
+    masterGain.connect(c.destination);
+    
+    const droneOsc = c.createOscillator();
+    droneOsc.type = 'sine';
+    droneOsc.frequency.value = 55;
+    const droneGain = c.createGain();
+    droneGain.gain.value = 0.15;
+    droneOsc.connect(droneGain);
+    droneGain.connect(masterGain);
+    droneOsc.start(now);
+    this.musicOscillators.push(droneOsc);
+    
+    const padOsc = c.createOscillator();
+    padOsc.type = 'triangle';
+    padOsc.frequency.value = 196;
+    const padGain = c.createGain();
+    padGain.gain.setValueAtTime(0, now);
+    padGain.gain.linearRampToValueAtTime(0.08, now + 2);
+    padGain.gain.setTargetAtTime(0.05, now + 4, 3);
+    padOsc.connect(padGain);
+    padGain.connect(masterGain);
+    padOsc.start(now);
+    this.musicOscillators.push(padOsc);
+    
+    let noteIndex = 0;
+    const playNote = () => {
+      if(!this.musicPlaying) return;
+      const osc = c.createOscillator();
+      osc.type = 'sine';
+      const freq = scale[noteIndex % scale.length];
+      osc.frequency.value = freq / 2;
+      const gain = c.createGain();
+      const t = c.currentTime;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.06, t + 0.5);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 3.5);
+      osc.connect(gain);
+      gain.connect(masterGain);
+      osc.start(t);
+      osc.stop(t + 4);
+      this.musicOscillators.push(osc);
+      noteIndex++;
+      setTimeout(playNote, 2000 + Math.random() * 1500);
+    };
+    playNote();
+    
+    let bassIndex = 0;
+    const playBass = () => {
+      if(!this.musicPlaying) return;
+      const osc = c.createOscillator();
+      osc.type = 'triangle';
+      const freq = bassScale[bassIndex % bassScale.length];
+      osc.frequency.value = freq;
+      const gain = c.createGain();
+      const t = c.currentTime;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.12, t + 0.3);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 2.5);
+      osc.connect(gain);
+      gain.connect(masterGain);
+      osc.start(t);
+      osc.stop(t + 3);
+      this.musicOscillators.push(osc);
+      bassIndex++;
+      setTimeout(playBass, 3000);
+    };
+    setTimeout(playBass, 1000);
   },
   play(name){
     if(state && state.muted) return;
@@ -835,10 +926,12 @@ $('btn-play').addEventListener('click',()=>{
   state=freshState([...chosenTables]);
   state.nextMobAt=randInt(CONFIG.mobEveryMin,CONFIG.mobEveryMax);
   save(); enterGame();
+  Sound.startMusic();
 });
 $('btn-continue').addEventListener('click',()=>{
   Sound.init();
   state=loadSave(); enterGame();
+  Sound.startMusic();
 });
 $('btn-lu-ok').addEventListener('click',()=>$('levelup').hidden=true);
 $('btn-shop').addEventListener('click',()=>Shop.open());
@@ -848,7 +941,11 @@ $('btn-reset').addEventListener('click',()=>{
   if(confirm('Точно сбросить весь прогресс?')){ localStorage.removeItem(CONFIG.saveKey); location.reload(); }
 });
 $('btn-mute').addEventListener('click',()=>{
-  state.muted=!state.muted; $('btn-mute').textContent=state.muted?'🔇':'🔊'; save();
+  state.muted=!state.muted; 
+  $('btn-mute').textContent=state.muted?'🔇':'🔊'; 
+  if(state.muted) Sound.stopMusic();
+  else Sound.startMusic();
+  save();
 });
 
 /* ---------------------- ЗАГРУЗКА ---------------------- */
