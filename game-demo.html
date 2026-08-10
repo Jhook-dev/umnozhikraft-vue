@@ -401,6 +401,8 @@ function loadSave(){
     if(!raw) return null;
     const s = JSON.parse(raw);
     if(!('progression' in s)) s.progression = true; // старым сохранениям продолжаем цепочку открытий
+    // ✨ ЗВУК: по умолчанию звук включён, если не указано иное
+    if(typeof s.muted === 'undefined') s.muted = false;
     return s;
   }catch(e){ return null; }
 }
@@ -428,7 +430,11 @@ const Sound = {
     hit:     null, // ← 'sounds/damage.ogg'
     buy:     null, // ← 'sounds/chest.ogg'
   },
-  init(){ if(!this.ctx) this.ctx = new (window.AudioContext||window.webkitAudioContext)(); },
+  init(){
+    if(!this.ctx) this.ctx = new (window.AudioContext||window.webkitAudioContext)();
+    // 🔊 Разблокируем AudioContext после жеста пользователя (требование браузеров)
+    if(this.ctx.state === 'suspended') this.ctx.resume().catch(()=>{});
+  },
   play(name){
     if(state && state.muted) return;
     this.init();
@@ -851,6 +857,8 @@ $('btn-mute').addEventListener('click',()=>{
   if(s){
     $('btn-continue').hidden=false;
     $('btn-continue').textContent=`⛏ ПРОДОЛЖИТЬ (ур. ${s.level}, 💎 ${s.diamonds}, глубина ${s.depth} м)`;
+    // ✨ ЗВУК: устанавливаем иконку кнопки звука при загрузке
+    $('btn-mute').textContent = s.muted ? '🔇' : '🔊';
   }
   refreshTableButtons();
 })();

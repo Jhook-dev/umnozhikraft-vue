@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia';
 import { CONFIG } from '@/shared/config/game';
 import { randInt, pickOne, shuffle } from '@/shared/lib/utils';
+import { soundManager } from '@/shared/lib/soundManager';
 
 function freshState(baseTables) {
   const sorted = baseTables.slice().sort((a, b) => a - b);
@@ -162,6 +163,9 @@ export const useGameStore = defineStore('game', {
       this.block.currentHp -= dmg;
       this.block.stage = Math.min(3, Math.ceil((1 - Math.max(0, this.block.currentHp) / this.block.maxHp) * 3));
 
+      // Звук удара по блоку
+      soundManager.play('dig');
+
       if (this.block.currentHp <= 0) {
         setTimeout(() => this.breakBlock(), 300);
       } else {
@@ -178,8 +182,13 @@ export const useGameStore = defineStore('game', {
     breakBlock() {
       this.state.depth++;
       if (Math.random() < this.block.dia) {
+        // Звук нахождения алмаза
+        soundManager.play('diamond');
         this.giveDiamonds(randInt(1, this.block.diaMax));
       }
+      // Звук разрушения блока
+      soundManager.play('breakB');
+      
       this.save();
       setTimeout(() => {
         this.spawnBlock();
@@ -201,6 +210,8 @@ export const useGameStore = defineStore('game', {
       this.mobActive = true;
       this.busy = false;
       this.currentMob = pickOne(CONFIG.mobs);
+      // Звук появления моба
+      soundManager.play('mob');
       this.generateProblem();
     },
 
@@ -231,6 +242,8 @@ export const useGameStore = defineStore('game', {
           this.state.tables.push(t);
         }
 
+        // Звук повышения уровня
+        soundManager.play('levelup');
         this.showLevelUp = true;
       }
       this.save();
@@ -246,6 +259,8 @@ export const useGameStore = defineStore('game', {
           this.state.ownedSkins.push(item.id);
           this.state.skin = item.id;
         }
+        // Звук покупки
+        soundManager.play('buy');
         this.save();
       }
     },
@@ -261,6 +276,8 @@ export const useGameStore = defineStore('game', {
 
     toggleMute() {
       this.state.muted = !this.state.muted;
+      // Обновляем состояние в soundManager
+      soundManager.setMuted(this.state.muted);
       this.save();
     },
 
