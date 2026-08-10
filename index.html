@@ -3,13 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>УЧИМСЯ ИГРАЮЧИ — Меню</title>
+<title>УМНОЖИКРАФТ — шахта умножения</title>
 
-<!-- ШРИФТЫ -->
+<!-- ШРИФТЫ: Press Start 2P поддерживает кириллицу — идеально под Minecraft -->
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Rubik:wght@400;600;800&display=swap" rel="stylesheet">
 
 <style>
+/* ============================================================
+   УМНОЖИКРАФТ — стили
+   🖼️ СПРАЙТЫ: все текстуры блоков сделаны CSS-градиентами.
+   Чтобы вставить настоящие текстуры Minecraft, замените
+   background у .block--dirt и т.д. на:
+   background: url('textures/dirt.png'); image-rendering: pixelated;
+   ============================================================ */
+
 :root{
   --dirt:#7a4f2a;  --grass:#67b93c; --stone:#8d8d8d;
   --dark:#161009;  --panel:#241a10; --panel2:#332415;
@@ -25,6 +33,7 @@ body{
   font-family:var(--body-font); color:var(--ink);
   user-select:none; -webkit-user-select:none; touch-action:manipulation;
   overflow-x:hidden;
+  /* Пещерная стена из блоков: сетка швов + тёмный градиент глубины */
   background:
     radial-gradient(900px 480px at 50% -8%, rgba(255,190,90,.10), transparent 60%),
     repeating-linear-gradient(0deg,  rgba(0,0,0,.28) 0 3px, transparent 3px 48px),
@@ -34,7 +43,7 @@ body{
 }
 .px{font-family:var(--px-font); image-rendering:pixelated;}
 
-/* Кнопки в стиле Minecraft */
+/* ---------- Кнопки в стиле Minecraft ---------- */
 .btn-mc{
   font-family:var(--px-font); font-size:14px; line-height:1.5;
   color:#fff; text-shadow:2px 2px 0 rgba(0,0,0,.6);
@@ -51,89 +60,988 @@ body{
 .btn-gold{background:linear-gradient(#ffcf52,#d99a13); color:#3a2500; text-shadow:1px 1px 0 rgba(255,255,255,.35);
   box-shadow:inset 0 4px 0 #ffe59a, inset 0 -6px 0 #9c6d05, 0 5px 0 #000;}
 .btn-gold:active{box-shadow:inset 0 4px 0 #ffe59a, inset 0 -6px 0 #9c6d05, 0 1px 0 #000;}
-.btn-red{background:linear-gradient(#e5483f,#b9362e); box-shadow:inset 0 4px 0 #ff8a7f, inset 0 -6px 0 #7a241d, 0 5px 0 #000;}
-.btn-red:active{box-shadow:inset 0 4px 0 #ff8a7f, inset 0 -6px 0 #7a241d, 0 1px 0 #000;}
 
-/* Экран меню */
-#screen-menu{min-height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:24px;}
-.logo{font-family:var(--px-font); font-size:clamp(22px,5vw,48px); text-align:center; line-height:1.25;
+/* ---------- ЭКРАН СТАРТА (в духе титульного меню MC) ---------- */
+#screen-start{min-height:100dvh; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:22px; padding:24px; position:relative;}
+.logo{font-family:var(--px-font); font-size:clamp(26px,6vw,58px); text-align:center; line-height:1.25;
   color:#fff; text-shadow:4px 4px 0 #3f3f3f, 8px 8px 0 rgba(0,0,0,.45); letter-spacing:2px;}
 .logo b{color:var(--gold); text-shadow:4px 4px 0 #7a5a00, 8px 8px 0 rgba(0,0,0,.45);}
-.menu-desc{max-width:560px; text-align:center; font-size:15px; color:#c9b28f;}
+.splash{position:absolute; top:-14px; right:-30px; transform:rotate(-9deg); color:#ff5; font-family:var(--px-font);
+  font-size:clamp(9px,1.6vw,14px); text-shadow:2px 2px 0 #3f3f00; animation:splash 1s ease-in-out infinite alternate; white-space:nowrap;}
+@keyframes splash{from{scale:1}to{scale:1.12}}
+.start-note{max-width:560px; text-align:center; font-size:15px; color:#c9b28f;}
 
-/* Карточки режимов */
-.mode-cards{display:flex; gap:20px; flex-wrap:wrap; justify-content:center; max-width:700px;}
-.mode-card{
-  background:var(--panel2); border:4px solid #000;
-  box-shadow:inset 0 0 0 3px #5b4426, 0 10px 0 #000;
-  padding:24px; width:280px; text-align:center;
-  display:flex; flex-direction:column; gap:16px; align-items:center;
-  transition:transform .15s, box-shadow .15s;
-  cursor:pointer;
-}
-.mode-card:hover{transform:translateY(-6px); box-shadow:inset 0 0 0 3px #7a5a26, 0 16px 0 #000;}
-.mode-card .icon{font-size:64px; margin-bottom:8px;}
-.mode-card h3{font-family:var(--px-font); font-size:16px; color:var(--gold); text-shadow:2px 2px 0 #000;}
-.mode-card p{font-size:13px; color:#b9a28a; line-height:1.5;}
-.mode-card .btn-mc{margin-top:8px; font-size:12px; padding:12px 16px;}
+/* ✨ НОВОЕ: выбор таблиц — кнопки-переключатели ×2…×9 */
+.tables-pick{display:flex; gap:10px; flex-wrap:wrap; justify-content:center; max-width:540px;}
+.tables-pick .tgl{font-size:16px; padding:15px 17px; opacity:.55; transition:opacity .15s;}
+.tables-pick .tgl.sel{outline:4px solid var(--gold); color:#ffe95e; opacity:1;}
+.presets{display:flex; gap:8px; flex-wrap:wrap; justify-content:center;}
+.presets .btn-mc{font-size:10px; padding:10px 12px;}
 
-/* Адаптив для мобильных */
-@media(max-width:640px){
-  .mode-cards{flex-direction:column; align-items:center;}
-  .mode-card{width:min(92vw,280px);}
+#btn-play{font-size:clamp(16px,3vw,24px); padding:22px 44px;}
+
+/* ---------- HUD ---------- */
+#hud{display:flex; align-items:center; gap:10px; flex-wrap:wrap; justify-content:center;
+  padding:10px 12px; background:rgba(0,0,0,.45); border-bottom:4px solid #000;}
+.slot{background:#1c1c1c; border:3px solid #000; box-shadow:inset 0 3px 0 rgba(255,255,255,.08), inset 0 -4px 0 rgba(0,0,0,.6);
+  padding:8px 12px; display:flex; align-items:center; gap:8px; font-family:var(--px-font); font-size:13px;}
+.slot .lbl{color:#9c8c70; font-size:9px;}
+#hud-xp{flex-direction:column; gap:3px; min-width:210px;}
+.xpbar{width:100%; height:14px; background:#111; border:2px solid #000;}
+.xpbar i{display:block; height:100%; width:0%; background:linear-gradient(#c4ff6e,#6fce2a); transition:width .4s;}
+#hud-level{color:var(--xp); font-size:11px; text-shadow:2px 2px 0 #1c3d00;}
+#hud-diamonds.pop{animation:pop .35s;}
+@keyframes pop{40%{transform:scale(1.35)}}
+#hud-combo{color:#ffb04a;}
+#hud-accuracy{color:#9ecbff;}
+#hud-accuracy.good{color:#9dff5e;}
+#hud-accuracy.bad{color:#e5483f;}
+#btn-shop,#btn-mute{font-size:12px; padding:11px 14px;}
+
+/* ---------- СЦЕНА ШАХТЫ ---------- */
+#scene{position:relative; width:min(920px,96vw); height:clamp(300px,44vh,430px); margin:14px auto 0;
+  overflow:hidden; border:4px solid #000; background:
+    radial-gradient(500px 260px at 50% 110%, rgba(255,170,60,.10), transparent 70%),
+    linear-gradient(180deg,#241a10,#170f08);
+  box-shadow:0 8px 0 #000;}
+#scene.shake{animation:shake .3s;}
+@keyframes shake{25%{transform:translate(-5px,3px)}50%{transform:translate(5px,-3px)}75%{transform:translate(-3px,2px)}}
+
+/* факелы */
+.torch{position:absolute; bottom:60px; width:10px; height:44px; background:#8a5a2b; box-shadow:inset -3px 0 0 #5c3a1e;}
+.torch::before{content:''; position:absolute; top:-14px; left:-3px; width:16px; height:16px; background:#ffb02e;
+  animation:flick .5s steps(2) infinite; box-shadow:0 0 18px 8px rgba(255,160,40,.45);}
+@keyframes flick{50%{background:#ff7b1c; transform:scale(.85)}}
+#torchL{left:7%;} #torchR{right:7%;}
+
+/* земля под ногами */
+#ground{position:absolute; left:0; right:0; bottom:0; height:36px;
+  background:linear-gradient(#67b93c 0 8px,#3f7d22 8px 12px,#7a4f2a 12px 100%);
+  border-top:3px solid #000;}
+
+/* шахтёр */
+#miner{position:absolute; left:9%; bottom:36px; animation:bob 2.2s ease-in-out infinite;}
+@keyframes bob{50%{transform:translateY(-4px)}}
+#hat{position:absolute; top:-30px; left:2px; font-size:26px; filter:drop-shadow(2px 2px 0 rgba(0,0,0,.5));}
+#tool{position:absolute; right:-46px; top:-6px; transform-origin:50% 92%; transform:rotate(-24deg);}
+#tool.swing{animation:swing .38s ease-out;}
+@keyframes swing{45%{transform:rotate(-105deg)}100%{transform:rotate(-24deg)}}
+
+/* блок в центре */
+#block-wrap{position:absolute; left:50%; bottom:36px; transform:translateX(-50%); text-align:center;}
+#block{width:clamp(120px,22vw,170px); height:clamp(120px,22vw,170px); margin:0 auto; position:relative;
+  border:4px solid #000; image-rendering:pixelated;
+  box-shadow:inset 0 6px 0 rgba(255,255,255,.22), inset 0 -8px 0 rgba(0,0,0,.35), 0 10px 0 rgba(0,0,0,.4);
+  animation:dropIn .55s cubic-bezier(.3,1.4,.5,1);}
+@keyframes dropIn{0%{transform:translateY(-300px)}75%{transform:translateY(0)}88%{transform:translateY(-14px)}100%{transform:translateY(0)}}
+#block.boom{animation:boom .18s forwards;}
+@keyframes boom{to{transform:scale(1.25); opacity:0}}
+/* 🖼️ СПРАЙТ: замените каждый блок на url('textures/stone.png') и т.д. */
+.block--dirt   {background:radial-gradient(circle at 20% 30%, #5c3a1e 0 9%, transparent 10%),
+                 radial-gradient(circle at 70% 60%, #5c3a1e 0 7%, transparent 8%),
+                 radial-gradient(circle at 45% 82%, #93683c 0 8%, transparent 9%),
+                 radial-gradient(circle at 85% 22%, #93683c 0 6%, transparent 7%), var(--dirt);}
+.block--grass  {background:linear-gradient(#67b93c 0 22%, #3f7d22 22% 27%, transparent 27%),
+                 radial-gradient(circle at 30% 60%, #5c3a1e 0 9%, transparent 10%),
+                 radial-gradient(circle at 72% 78%, #93683c 0 8%, transparent 9%), var(--dirt);}
+.block--stone  {background:radial-gradient(circle at 25% 35%, #777 0 12%, transparent 13%),
+                 radial-gradient(circle at 68% 65%, #a3a3a3 0 10%, transparent 11%),
+                 radial-gradient(circle at 55% 20%, #6f6f6f 0 8%, transparent 9%), var(--stone);}
+.block--coal   {background:radial-gradient(circle at 28% 32%, #191919 0 12%, transparent 13%),
+                 radial-gradient(circle at 70% 62%, #222 0 11%, transparent 12%),
+                 radial-gradient(circle at 48% 82%, #141414 0 9%, transparent 10%), var(--stone);}
+.block--iron   {background:radial-gradient(circle at 28% 32%, #e2b183 0 11%, transparent 12%),
+                 radial-gradient(circle at 70% 62%, #d9a374 0 10%, transparent 11%),
+                 radial-gradient(circle at 50% 84%, #e8bd93 0 8%, transparent 9%), var(--stone);}
+.block--diamond{background:radial-gradient(circle at 28% 32%, #7dfbe2 0 11%, transparent 12%),
+                 radial-gradient(circle at 70% 62%, #43e0c0 0 10%, transparent 11%),
+                 radial-gradient(circle at 50% 84%, #9ffef0 0 8%, transparent 9%), var(--stone);
+                 filter:drop-shadow(0 0 14px rgba(67,224,192,.55));}
+.block--gold   {background:radial-gradient(circle at 28% 32%, #ffe59a 0 11%, transparent 12%),
+                 radial-gradient(circle at 70% 62%, #ffc93c 0 10%, transparent 11%),
+                 radial-gradient(circle at 50% 84%, #ffd96b 0 8%, transparent 9%), var(--stone);
+                 filter:drop-shadow(0 0 12px rgba(255,201,60,.5));}
+.block--emerald{background:radial-gradient(circle at 28% 32%, #7dffb0 0 11%, transparent 12%),
+                 radial-gradient(circle at 70% 62%, #2ecc71 0 10%, transparent 11%),
+                 radial-gradient(circle at 50% 84%, #58d68d 0 8%, transparent 9%), var(--stone);
+                 filter:drop-shadow(0 0 12px rgba(46,204,113,.5));}
+.block--redstone{background:radial-gradient(circle at 28% 32%, #ff6b6b 0 11%, transparent 12%),
+                 radial-gradient(circle at 70% 62%, #e74c3c 0 10%, transparent 11%),
+                 radial-gradient(circle at 50% 84%, #ec7063 0 8%, transparent 9%), var(--stone);
+                 filter:drop-shadow(0 0 10px rgba(231,76,60,.4));}
+/* Трещины: 🖼️ СПРАЙТ — сюда идеально встанут destroy_stage0..2.png из MC */
+.cracks{position:absolute; inset:0; pointer-events:none;}
+.cracks i{position:absolute; inset:0; opacity:0; transition:opacity .2s;}
+.cracks i:nth-child(1){background:linear-gradient(63deg, transparent 47%, rgba(0,0,0,.55) 48% 51%, transparent 52%);}
+.cracks i:nth-child(2){background:linear-gradient(63deg,transparent 47%,rgba(0,0,0,.55) 48% 51%,transparent 52%),
+  linear-gradient(-40deg, transparent 30%, rgba(0,0,0,.45) 31% 34%, transparent 35%);}
+.cracks i:nth-child(3){background:linear-gradient(63deg,transparent 47%,rgba(0,0,0,.6) 48% 51%,transparent 52%),
+  linear-gradient(-40deg,transparent 30%,rgba(0,0,0,.5) 31% 34%,transparent 35%),
+  linear-gradient(100deg, transparent 62%, rgba(0,0,0,.5) 63% 66%, transparent 67%);}
+#block.stage-1 .cracks i:nth-child(1){opacity:1;}
+#block.stage-2 .cracks i:nth-child(-n+2){opacity:1;}
+#block.stage-3 .cracks i{opacity:1;}
+#pips{display:flex; gap:6px; justify-content:center; margin-top:8px;}
+#pips i{width:14px; height:14px; background:#ff5f5f; border:2px solid #000; box-shadow:inset 0 3px 0 rgba(255,255,255,.4);}
+#pips i.off{background:#3a3a3a;}
+
+/* моб */
+#mob{position:absolute; right:9%; bottom:36px; text-align:center; opacity:0; transform:translateX(260px);}
+#mob.enter{animation:hopIn .8s forwards;}
+@keyframes hopIn{0%{opacity:1; transform:translateX(260px) translateY(0)}
+  25%{transform:translateX(180px) translateY(-26px)} 50%{transform:translateX(110px) translateY(0)}
+  75%{transform:translateX(40px) translateY(-20px)} 100%{opacity:1; transform:translateX(0) translateY(0)}}
+#mob.hop{animation:hop .4s;}
+@keyframes hop{40%{transform:translateY(-24px) rotate(-6deg)}}
+#mob.leave{animation:mobLeave .8s forwards;}
+@keyframes mobLeave{30%{transform:translateX(30px) rotate(-8deg)}
+  100%{transform:translateX(360px) translateY(-40px) rotate(28deg); opacity:0}}
+#mob-bubble{position:absolute; top:-46px; left:50%; transform:translateX(-50%); background:#fff; color:#000;
+  font-family:var(--px-font); font-size:20px; padding:6px 10px; border:3px solid #000; animation:pop .3s;}
+
+/* частицы и всплывающий текст */
+.particle{position:absolute; width:10px; height:10px; pointer-events:none; z-index:5; animation:fly .75s forwards;}
+@keyframes fly{55%{transform:translate(var(--dx),var(--dy)) rotate(120deg); opacity:1}
+  100%{transform:translate(calc(var(--dx)*1.3), calc(var(--dy)*-0.4 + 90px)) rotate(260deg); opacity:0}}
+.float-text{position:absolute; font-family:var(--px-font); font-size:16px; color:#ffe95e;
+  text-shadow:2px 2px 0 #000; pointer-events:none; z-index:6; animation:floatUp 1.1s forwards; white-space:nowrap;}
+.float-text.good{color:#9dff5e;} .float-text.dia{color:var(--diamond); font-size:20px;}
+@keyframes floatUp{to{transform:translateY(-70px); opacity:0}}
+
+/* ---------- ПАНЕЛЬ ЗАДАНИЯ ---------- */
+#quest{width:min(760px,96vw); margin:14px auto 26px; background:var(--panel);
+  border:4px solid #000; box-shadow:inset 0 0 0 3px #4a3722, 0 8px 0 #000; padding:18px 16px 22px; text-align:center;}
+#quest-text{font-size:clamp(15px,2.6vw,20px); font-weight:800; color:#ffd98a; margin-bottom:10px;}
+#equation{font-family:var(--px-font); font-size:clamp(30px,6.5vw,52px); color:#fff;
+  text-shadow:4px 4px 0 #000; margin-bottom:18px;}
+#equation .q{color:var(--gold); animation:blink 1s steps(2) infinite;}
+#equation.solved{color:#9dff5e;} #equation.solved .q{animation:none; color:#9dff5e;}
+@keyframes blink{50%{opacity:.25}}
+#answers{display:grid; grid-template-columns:1fr 1fr; gap:14px; max-width:560px; margin:0 auto;}
+.answer{font-size:clamp(20px,4vw,28px); padding:20px 8px; min-height:76px; position:relative;}
+.answer.correct{background:linear-gradient(#7ee04e,#3f9a1f) !important; color:#fff !important; animation:pop .35s;}
+.answer.cracked{background:linear-gradient(#5c5c5c,#454545) !important; color:#8a8a8a !important;
+  text-decoration:line-through; pointer-events:none; transform:translateY(4px);
+  box-shadow:inset 0 4px 0 #777, inset 0 -6px 0 #333, 0 1px 0 #000;}
+#hint{margin-top:14px; font-size:clamp(14px,2.4vw,18px); font-weight:600; color:#9ecbff; min-height:24px;}
+
+/* ---------- МАГАЗИН / МОДАЛКИ ---------- */
+.overlay{position:fixed; inset:0; background:rgba(0,0,0,.75); display:flex; align-items:center; justify-content:center; z-index:50; padding:16px;}
+.panel{background:var(--panel2); border:4px solid #000; box-shadow:inset 0 0 0 3px #5b4426, 0 10px 0 #000;
+  padding:22px; width:min(640px,94vw); max-height:88dvh; overflow:auto; text-align:center;}
+.panel h2{font-family:var(--px-font); font-size:clamp(16px,3vw,24px); color:var(--gold);
+  text-shadow:3px 3px 0 #000; margin-bottom:16px;}
+.shop-tabs{display:flex; gap:10px; justify-content:center; margin-bottom:16px;}
+#shop-grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(240px,1fr)); gap:14px; text-align:left;}
+.item{background:#1d140b; border:3px solid #000; box-shadow:inset 0 3px 0 rgba(255,255,255,.06); padding:12px; display:flex; flex-direction:column; gap:8px; align-items:center;}
+.item .icon{height:64px; display:flex; align-items:center; justify-content:center;}
+.item .name{font-family:var(--px-font); font-size:11px; text-align:center;}
+.item .desc{font-size:13px; color:#c9b28f; text-align:center;}
+.item .btn-mc{font-size:11px; padding:10px 12px; width:100%;}
+.item .equipped{color:#9dff5e; font-family:var(--px-font); font-size:11px;}
+#toasts{position:fixed; top:14px; left:50%; transform:translateX(-50%); z-index:60; display:flex; flex-direction:column; gap:8px; align-items:center; pointer-events:none;}
+.toast{font-family:var(--px-font); font-size:13px; background:#000; border:3px solid var(--gold); color:#ffe95e; padding:10px 16px; animation:toastIn 2.6s forwards;}
+@keyframes toastIn{0%{opacity:0; transform:translateY(-20px)}10%,80%{opacity:1; transform:translateY(0)}100%{opacity:0}}
+#levelup h2{font-size:clamp(20px,4vw,32px); animation:pop .4s;}
+#lu-text{font-size:clamp(15px,2.6vw,20px); font-weight:800; margin:14px 0 20px; color:#c8ff9d;}
+
+@media (max-width:560px){
+  #miner{left:3%;} #mob{right:3%;}
+  #answers{gap:10px;}
+  .slot{font-size:11px; padding:6px 8px;}
 }
 </style>
 </head>
 <body>
 
-<section id="screen-menu">
-  <h1 class="logo">УЧИМСЯ<br><b>ИГРАЮЧИ</b></h1>
-  <p class="menu-desc">Выбери режим обучения:</p>
-  
-  <div class="mode-cards">
-    <!-- Карточка таблицы умножения -->
-    <div class="mode-card" id="card-multiply">
-      <div class="icon">✖️</div>
-      <h3>ТАБЛИЦА УМНОЖЕНИЯ</h3>
-      <p>Решай примеры на умножение, ломай блоки и добывай ресурсы!</p>
-      <button class="btn-mc btn-green" data-mode="multiply">▶ ИГРАТЬ</button>
-    </div>
-    
-    <!-- Карточка русского алфавита -->
-    <div class="mode-card" id="card-alphabet">
-      <div class="icon">🅰️</div>
-      <h3>РУССКИЙ АЛФАВИТ</h3>
-      <p>Изучай буквы русского алфавита в увлекательной игре!</p>
-      <button class="btn-mc btn-gold" data-mode="alphabet">▶ ИГРАТЬ</button>
-    </div>
+<!-- ==================== ЭКРАН СТАРТА ==================== -->
+<section id="screen-start">
+  <div style="position:relative">
+    <h1 class="logo">УМНОЖИ<b>КРАФТ</b></h1>
+    <span class="splash">🎯 Точность: следи за %!</span>
   </div>
-  
-  <p class="menu-desc" style="font-size:12px; opacity:.6; margin-top:20px;">
-    💡 Совет: переключайся между режимами, чтобы разнообразить обучение!
-  </p>
+  <p class="start-note">Решай примеры — ломай блоки! Отметь таблицы, которые хочешь тренировать (можно несколько):</p>
+
+  <!-- ✨ НОВОЕ: все таблицы ×2…×9, кнопки-переключатели -->
+  <div class="tables-pick" id="tables-pick">
+    <button class="btn-mc tgl sel" data-t="2">× 2</button>
+    <button class="btn-mc tgl sel" data-t="3">× 3</button>
+    <button class="btn-mc tgl" data-t="4">× 4</button>
+    <button class="btn-mc tgl" data-t="5">× 5</button>
+    <button class="btn-mc tgl" data-t="6">× 6</button>
+    <button class="btn-mc tgl" data-t="7">× 7</button>
+    <button class="btn-mc tgl" data-t="8">× 8</button>
+    <button class="btn-mc tgl" data-t="9">× 9</button>
+  </div>
+  <div class="presets">
+    <button class="btn-mc" data-preset="2,3">🌱 НОВИЧОК ×2–×3</button>
+    <button class="btn-mc" data-preset="4,5,6">⛏ СРЕДНИЙ ×4–×6</button>
+    <button class="btn-mc" data-preset="7,8,9">💪 ПРО ×7–×9</button>
+    <button class="btn-mc btn-gold" data-preset="2,3,4,5,6,7,8,9">💎 ВСЕ ×2–×9</button>
+  </div>
+
+  <button class="btn-mc btn-green" id="btn-play">▶ НОВАЯ ИГРА</button>
+  <button class="btn-mc btn-gold" id="btn-continue" hidden>⛏ ПРОДОЛЖИТЬ СМЕНУ</button>
+  <p class="start-note" style="font-size:13px; opacity:.75">Для родителей: в игре нет проигрыша — за ошибку ребёнок получает мягкую подсказку и пробует снова. Набор «Новичок» открывает новые таблицы по уровням.</p>
 </section>
 
+<!-- ==================== ИГРОВОЙ ЭКРАН ==================== -->
+<main id="screen-game" hidden>
+  <header id="hud">
+    <div class="slot">⬇ <span class="lbl">ГЛУБИНА</span> <span id="hud-depth">0 м</span></div>
+    <div class="slot" id="hud-xp">
+      <span id="hud-level">УРОВЕНЬ 1</span>
+      <div class="xpbar"><i id="hud-xpfill"></i></div>
+    </div>
+    <div class="slot" id="hud-diamonds">💎 <span id="hud-dia">0</span></div>
+    <div class="slot" id="hud-combo" hidden>🔥 ×<span id="hud-streak">0</span></div>
+    <div class="slot" id="hud-accuracy" title="Точность ответов">🎯 <span id="hud-acc">100%</span></div>
+    <button class="btn-mc btn-gold" id="btn-shop">🛒 МАГАЗИН</button>
+    <button class="btn-mc" id="btn-mute" title="Звук">🔊</button>
+  </header>
+
+  <div id="scene">
+    <div class="torch" id="torchL"></div>
+    <div class="torch" id="torchR"></div>
+    <div id="ground"></div>
+    <div id="miner"><span id="hat"></span><span id="minerSprite"></span><span id="tool"></span></div>
+    <div id="block-wrap">
+      <div id="block" class="block--grass"><div class="cracks"><i></i><i></i><i></i></div></div>
+      <div id="pips"></div>
+    </div>
+    <div id="mob"><div id="mob-bubble" hidden>❗</div><span id="mobSprite"></span></div>
+  </div>
+
+  <section id="quest">
+    <div id="quest-text">Разбей блок! Реши пример:</div>
+    <div id="equation" class="px"></div>
+    <div id="answers"></div>
+    <div id="hint"></div>
+  </section>
+</main>
+
+<!-- ==================== МАГАЗИН ==================== -->
+<div class="overlay" id="shop" hidden>
+  <div class="panel">
+    <h2>🛒 ШАХТЁРСКИЙ МАГАЗИН</h2>
+    <p style="margin-bottom:12px">Твои алмазы: 💎 <b id="shop-dia">0</b></p>
+    <div class="shop-tabs">
+      <button class="btn-mc" data-tab="picks">⛏ КИРКИ</button>
+      <button class="btn-mc" data-tab="skins">🧑 СКИНЫ</button>
+    </div>
+    <div id="shop-grid"></div>
+    <div style="margin-top:18px; display:flex; gap:10px; justify-content:center; flex-wrap:wrap">
+      <button class="btn-mc btn-green" id="btn-shop-close">КОПАТЬ ДАЛЬШЕ</button>
+      <button class="btn-mc" id="btn-reset" style="font-size:10px">🗑 Сброс прогресса</button>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== НОВЫЙ УРОВЕНЬ ==================== -->
+<div class="overlay" id="levelup" hidden>
+  <div class="panel" id="levelup-panel">
+    <h2>⭐ УРОВЕНЬ <span id="lu-num">2</span>! ⭐</h2>
+    <div id="lu-text"></div>
+    <button class="btn-mc btn-green" id="btn-lu-ok">КОПАТЬ ДАЛЬШЕ ⛏</button>
+  </div>
+</div>
+
+<div id="toasts"></div>
+
 <script>
-// Переход к выбранному режиму
-document.querySelectorAll('[data-mode]').forEach(btn => {
-  btn.addEventListener('click', (e) => {
-    e.stopPropagation();
-    const mode = btn.dataset.mode;
-    window.location.href = mode === 'multiply' ? 'multiply.html' : 'alphabet.html';
-  });
-});
+'use strict';
+/* ================================================================
+   УМНОЖИКРАФТ — логика игры
+   ✨ В этой версии: выбор любых таблиц ×2…×9 на старте.
+   ================================================================ */
 
-// Клик по карточке тоже запускает игру
-document.querySelectorAll('.mode-card').forEach(card => {
-  card.addEventListener('click', () => {
-    const btn = card.querySelector('[data-mode]');
-    if(btn) {
-      const mode = btn.dataset.mode;
-      window.location.href = mode === 'multiply' ? 'multiply.html' : 'alphabet.html';
+/* ---------------------- КОНФИГ ---------------------- */
+const CONFIG = {
+  // ✨ Таблицы, открывающиеся с уровнями — только для набора «Новичок» (×2 и ×3).
+  // Теперь открываем до ×9 включительно.
+  unlockByLevel: {2:4, 3:5, 4:6, 5:7, 6:8, 7:9},
+
+  blocks: [
+    {id:'grass',   cls:'block--grass',   name:'Земля',         hp:1, minDepth:0,  dia:.08, diaMax:1, xp:8},
+    {id:'stone',   cls:'block--stone',   name:'Камень',        hp:2, minDepth:3,  dia:.12, diaMax:1, xp:10},
+    {id:'coal',    cls:'block--coal',    name:'Угольная руда', hp:2, minDepth:8,  dia:.4,  diaMax:1, xp:12},
+    {id:'iron',    cls:'block--iron',    name:'Железная руда', hp:3, minDepth:15, dia:.65, diaMax:2, xp:15},
+    {id:'gold',    cls:'block--gold',    name:'Золотая руда',  hp:3, minDepth:20, dia:.75, diaMax:2, xp:18},
+    {id:'emerald', cls:'block--emerald', name:'Изумрудная руда',hp:4,minDepth:28, dia:.85, diaMax:2, xp:22},
+    {id:'redstone',cls:'block--redstone',name:'Редстоун',      hp:3, minDepth:18, dia:.55, diaMax:2, xp:16, effect:'speed'},
+    {id:'diamond', cls:'block--diamond', name:'Алмазная руда', hp:4, minDepth:24, dia:1,   diaMax:3, xp:25},
+  ],
+
+  mobs: [
+    {id:'zombie',  name:'Зомби',  lines:['Зомби убежал жаловаться маме!','Зомби забыл, зачем пришёл!']},
+    {id:'creeper', name:'Крипер', lines:['Крипер обиделся и ушёл шипеть в уголок!','Крипер передумал взрываться!']},
+  ],
+
+  picks: [
+    {id:'wood',   name:'Деревянная кирка', dmg:1, price:0,  color:'#a97d4b'},
+    {id:'stone',  name:'Каменная кирка',   dmg:2, price:10, color:'#9c9c9c'},
+    {id:'iron',   name:'Железная кирка',   dmg:3, price:25, color:'#e8e8e8'},
+    {id:'gold',   name:'Золотая кирка',    dmg:4, price:45, color:'#ffd43d'},
+    {id:'diamond',name:'Алмазная кирка',   dmg:5, price:70, color:'#43e0c0'},
+  ],
+
+  skins: [
+    {id:'classic', name:'Шахтёр Стив',    price:0,  shirt:'#3fa7c9', skinTone:'#d29b62', hat:''},
+    {id:'zombik',  name:'Зомбик',         price:15, shirt:'#1f7a8c', skinTone:'#6fae4f', hat:''},
+    {id:'helmet',  name:'Прораб в каске', price:30, shirt:'#ff8c2e', skinTone:'#d29b62', hat:'👷'},
+    {id:'king',    name:'Король шахты',   price:50, shirt:'#a24de0', skinTone:'#d29b62', hat:'👑'},
+  ],
+
+  xpNeed: lvl => 50 + (lvl - 1) * 40,
+  mobEveryMin: 4,
+  mobEveryMax: 7,
+  saveKey: 'umnozhikraft_save_v1',
+};
+
+/* ---------------------- СОСТОЯНИЕ ---------------------- */
+let state = null;
+function freshState(baseTables){
+  const sorted = baseTables.slice().sort((a,b)=>a-b);
+  return {
+    tables: sorted.slice(),
+    // ✨ ПРОГРЕССИЯ: если выбран ровно набор «Новичок» (×2 и ×3),
+    // новые таблицы открываются с уровнями. Для своего набора — тренируем только его.
+    progression: sorted.join(',') === '2,3',
+    xp:0, xpIntoLevel:0, level:1, diamonds:0, depth:0,
+    streak:0, sinceMob:0, nextMobAt: 999,
+    pick:'wood', skin:'classic', ownedPicks:['wood'], ownedSkins:['classic'],
+    retry:[], muted:false,
+    totalAnswers:0, correctAnswers:0,
+  };
+}
+function save(){ localStorage.setItem(CONFIG.saveKey, JSON.stringify(state)); }
+function loadSave(){
+  try{
+    const raw = localStorage.getItem(CONFIG.saveKey);
+    if(!raw) return null;
+    const s = JSON.parse(raw);
+    if(!('progression' in s)) s.progression = true; // старым сохранениям продолжаем цепочку открытий
+    // ✨ ЗВУК: по умолчанию звук включён, если не указано иное
+    if(typeof s.muted === 'undefined') s.muted = false;
+    // ✨ СТАТИСТИКА: добавляем поля точности для старых сохранений
+    if(typeof s.totalAnswers === 'undefined') s.totalAnswers = 0;
+    if(typeof s.correctAnswers === 'undefined') s.correctAnswers = 0;
+    return s;
+  }catch(e){ return null; }
+}
+
+/* ---------------------- УТИЛИТЫ ---------------------- */
+const $ = id => document.getElementById(id);
+const randInt = (a,b) => a + Math.floor(Math.random()*(b-a+1));
+const pickOne = arr => arr[randInt(0, arr.length-1)];
+const shuffle = arr => { for(let i=arr.length-1;i>0;i--){ const j=randInt(0,i); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; };
+
+/* ================================================================
+   🔊 ЗВУК. Сейчас — бипы WebAudio. ЧТОБЫ ВСТАВИТЬ ЗВУКИ MINECRAFT:
+   пропишите пути к .ogg в Sound.FILES ниже.
+   ================================================================ */
+const Sound = {
+  ctx:null,
+  musicPlaying:false,
+  musicOscillators:[],
+  FILES:{
+    dig:     null, // ← 'sounds/dig_stone.ogg'
+    breakB:  null, // ← 'sounds/break_stone.ogg'
+    correct: null, // ← 'sounds/orb.ogg'
+    wrong:   null, // ← 'sounds/pop.ogg'
+    diamond: null, // ← 'sounds/levelup.ogg'
+    levelup: null, // ← 'sounds/levelup.ogg'
+    mob:     null, // ← 'sounds/zombie_say.ogg'
+    hit:     null, // ← 'sounds/damage.ogg'
+    buy:     null, // ← 'sounds/chest.ogg'
+  },
+  init(){
+    if(!this.ctx) this.ctx = new (window.AudioContext||window.webkitAudioContext)();
+    // 🔊 Разблокируем AudioContext после жеста пользователя (требование браузеров)
+    if(this.ctx.state === 'suspended') this.ctx.resume().catch(()=>{});
+  },
+  startMusic(){
+    if(this.musicPlaying || (state && state.muted)) return;
+    this.init();
+    this.musicPlaying = true;
+    this._playAmbientLoop();
+  },
+  stopMusic(){
+    this.musicPlaying = false;
+    this.musicOscillators.forEach(o => {
+      try { o.stop(); o.disconnect(); } catch(e){}
+    });
+    this.musicOscillators = [];
+  },
+  _playAmbientLoop(){
+    const c = this.ctx;
+    const now = c.currentTime;
+    
+    // 🎵 НОВАЯ МУЗЫКА: В стиле C418 (Minecraft) — мелодичная, с арпеджио и аккордами
+    // Тональность: E минор (Em) — классика Minecraft
+    const emScale = [329.63, 392.00, 440.00, 493.88, 587.33, 659.25, 783.99, 987.77]; // E, G, A, B, D, E, G, B
+    const chords = [
+      [329.63, 392.00, 493.88],  // Em (E-G-B)
+      [392.00, 493.88, 587.33],  // G (G-B-D)
+      [329.63, 440.00, 493.88],  // Asus2 (E-A-B)
+      [329.63, 392.00, 587.33],  // Em(add6) (E-G-D)
+    ];
+    
+    const masterGain = c.createGain();
+    masterGain.gain.value = 0.12;
+    masterGain.connect(c.destination);
+    
+    // Мягкий низкочастотный дрон (октава ниже)
+    const droneOsc = c.createOscillator();
+    droneOsc.type = 'sine';
+    droneOsc.frequency.value = 164.81; // E3
+    const droneGain = c.createGain();
+    droneGain.gain.value = 0.08;
+    droneOsc.connect(droneGain);
+    droneGain.connect(masterGain);
+    droneOsc.start(now);
+    this.musicOscillators.push(droneOsc);
+    
+    // Арпеджио (пианино-подобный звук)
+    let arpIndex = 0;
+    let chordIndex = 0;
+    const playArp = () => {
+      if(!this.musicPlaying) return;
+      const osc = c.createOscillator();
+      osc.type = 'triangle';
+      const chord = chords[chordIndex % chords.length];
+      const note = chord[arpIndex % chord.length];
+      osc.frequency.value = note;
+      
+      const gain = c.createGain();
+      const t = c.currentTime;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.15, t + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 1.2);
+      
+      osc.connect(gain);
+      gain.connect(masterGain);
+      osc.start(t);
+      osc.stop(t + 1.3);
+      this.musicOscillators.push(osc);
+      
+      arpIndex++;
+      if (arpIndex % 3 === 0) chordIndex++;
+      
+      setTimeout(playArp, 280);
+    };
+    playArp();
+    
+    // Басовая линия (каждые 2 такта)
+    let bassNote = 0;
+    const bassPattern = [164.81, 196.00, 164.81, 146.83]; // E, G, E, D
+    const playBass = () => {
+      if(!this.musicPlaying) return;
+      const osc = c.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = bassPattern[bassNote % bassPattern.length];
+      
+      const gain = c.createGain();
+      const t = c.currentTime;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.2, t + 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.8);
+      
+      osc.connect(gain);
+      gain.connect(masterGain);
+      osc.start(t);
+      osc.stop(t + 0.9);
+      this.musicOscillators.push(osc);
+      
+      bassNote++;
+      setTimeout(playBass, 1200);
+    };
+    playBass();
+    
+    // Высокая мелодия (случайные ноты из гаммы, как звёзды)
+    let melodyIndex = 0;
+    const playMelody = () => {
+      if(!this.musicPlaying) return;
+      const osc = c.createOscillator();
+      osc.type = 'sine';
+      const freq = emScale[melodyIndex % emScale.length] * (Math.random() > 0.5 ? 1 : 2);
+      osc.frequency.value = freq;
+      
+      const gain = c.createGain();
+      const t = c.currentTime;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.08, t + 0.1);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 2);
+      
+      osc.connect(gain);
+      gain.connect(masterGain);
+      osc.start(t);
+      osc.stop(t + 2.1);
+      this.musicOscillators.push(osc);
+      
+      melodyIndex += Math.floor(Math.random() * 3) + 1;
+      setTimeout(playMelody, 1800 + Math.random() * 1200);
+    };
+    setTimeout(playMelody, 500);
+  },
+  play(name){
+    if(state && state.muted) return;
+    this.init();
+    const file = this.FILES[name];
+    if(file){ new Audio(file).play().catch(()=>{}); return; }
+    this._beep(name);
+  },
+  _tone(freq, dur, type, delay, vol){
+    const c=this.ctx, o=c.createOscillator(), g=c.createGain();
+    o.type=type; o.frequency.value=freq; o.connect(g); g.connect(c.destination);
+    const t=c.currentTime+(delay||0);
+    g.gain.setValueAtTime(vol||.12, t); g.gain.exponentialRampToValueAtTime(.001, t+dur);
+    o.start(t); o.stop(t+dur);
+  },
+  _beep(name){
+    const B={
+      dig:    ()=>{ this._tone(160,.06,'square'); this._tone(120,.06,'square',.06); },
+      breakB: ()=>{ [300,220,140].forEach((f,i)=>this._tone(f,.08,'sawtooth',i*.05)); },
+      correct:()=>{ this._tone(523,.09,'triangle'); this._tone(659,.12,'triangle',.09); },
+      wrong:  ()=>{ this._tone(210,.12,'sine'); this._tone(160,.16,'sine',.11,.09); },
+      diamond:()=>{ this._tone(1175,.07,'sine',0,.1); this._tone(1568,.16,'sine',.07,.1); },
+      levelup:()=>{ [392,523,659,784].forEach((f,i)=>this._tone(f,.13,'triangle',i*.11)); },
+      mob:    ()=>{ this._tone(95,.25,'sawtooth',0,.14); this._tone(80,.25,'sawtooth',.2,.14); },
+      hit:    ()=>{ this._tone(420,.05,'square'); this._tone(200,.09,'square',.05); },
+      buy:    ()=>{ this._tone(700,.08,'triangle'); this._tone(900,.12,'triangle',.08); },
+    };
+    (B[name]||(()=>{}))();
+  }
+};
+
+/* ================================================================
+   🖼️ ПИКСЕЛЬ-АРТ (box-shadow из текстовых схем)
+   ================================================================ */
+function makeSprite(rows, palette, px=6){
+  const shadows=[];
+  rows.forEach((row,y)=>{ [...row].forEach((ch,x)=>{
+    const c=palette[ch]; if(c) shadows.push(`${x*px}px ${y*px}px 0 0 ${c}`);
+  });});
+  const wrap=document.createElement('div');
+  wrap.style.cssText=`position:relative;width:${rows[0].length*px}px;height:${rows.length*px}px`;
+  const dot=document.createElement('div');
+  dot.style.cssText=`position:absolute;width:${px}px;height:${px}px;box-shadow:${shadows.join(',')}`;
+  wrap.appendChild(dot);
+  return wrap;
+}
+const MINER_MAP=[ "..HHHH..",".HHHHHH.",".FFFFFF.",".FEFFEF.",".FFFFFF.",".SSSSSS.","FSSSSSSF",".SSSSSS.",".PPPPPP.",".BB..BB." ];
+const CREEPER_MAP=[ "GGGGGGGG","GgGGGGgG","GEEGGEEG","GEEGGEEG","GGGEEGGG","GGGEEGGG","GGEGGEGG","GGEGGEGG","GgGGGGgG","GGGGGGGG","GG....GG" ];
+const PICK_MAP=[ "PP....PP","PPPPPPPP",".PPPPPP.","...TT...","...TT...","...TT...","...TT..." ];
+const SWORD_MAP=[ "...LL...","...LL...","...LL...","...LL...",".TTTTTT.","...TT...","...TT..." ];
+const DIA_ICON=[ ".DDDDD.","DWDDDDD","DDDDDDK",".DDDDDK","..DDDK.","...DK.." ];
+
+const Sprites = {
+  miner(){ const s=CONFIG.skins.find(x=>x.id===state.skin);
+    return makeSprite(MINER_MAP,{H:'#4a2e18',F:s.skinTone,E:'#2c3f8f',S:s.shirt,P:'#2b3a8f',B:'#5d5d5d'},6); },
+  zombie(){ return makeSprite(MINER_MAP,{H:'#3e6b2f',F:'#6fae4f',E:'#111',S:'#1f7a8c',P:'#2b3a8f',B:'#444'},6); },
+  creeper(){ return makeSprite(CREEPER_MAP,{G:'#58c43c',g:'#3f9a2a',E:'#101d0c'},6); },
+  pickaxe(color,px=6){ return makeSprite(PICK_MAP,{P:color,T:'#8a5a2b'},px); },
+  sword(){ return makeSprite(SWORD_MAP,{L:'#43e0c0',T:'#8a5a2b'},6); },
+  minerPreview(skin){ return makeSprite(MINER_MAP,{H:'#4a2e18',F:skin.skinTone,E:'#2c3f8f',S:skin.shirt,P:'#2b3a8f',B:'#5d5d5d'},4); },
+};
+
+/* ---------------------- ИНТЕРФЕЙС ---------------------- */
+function renderHUD(){
+  $('hud-depth').textContent = state.depth + ' м';
+  $('hud-dia').textContent = state.diamonds;
+  $('hud-level').textContent = 'УРОВЕНЬ ' + state.level;
+  $('hud-xpfill').style.width = Math.min(100, state.xpIntoLevel / CONFIG.xpNeed(state.level) * 100) + '%';
+  const combo=$('hud-combo');
+  if(state.streak>=2){ combo.hidden=false; $('hud-streak').textContent=state.streak; } else combo.hidden=true;
+}
+function updateAccuracy(){
+  const accEl = $('hud-accuracy');
+  const accSpan = $('hud-acc');
+  if(state.totalAnswers === 0){
+    accSpan.textContent = '100%';
+    accEl.className = 'slot';
+    return;
+  }
+  const pct = Math.round(state.correctAnswers / state.totalAnswers * 100);
+  accSpan.textContent = pct + '%';
+  accEl.className = 'slot' + (pct >= 80 ? ' good' : pct < 50 ? ' bad' : '');
+}
+function renderMiner(){
+  $('minerSprite').innerHTML=''; $('minerSprite').appendChild(Sprites.miner());
+  $('hat').textContent = CONFIG.skins.find(s=>s.id===state.skin).hat;
+  renderTool('pick');
+}
+function renderTool(mode){
+  const t=$('tool'); t.innerHTML='';
+  if(mode==='sword') t.appendChild(Sprites.sword());
+  else t.appendChild(Sprites.pickaxe(CONFIG.picks.find(p=>p.id===state.pick).color));
+}
+function swingTool(){ const t=$('tool'); t.classList.remove('swing'); void t.offsetWidth; t.classList.add('swing'); }
+
+let block=null, problem=null, busy=false, mobActive=false, wrongThisProblem=0;
+
+function blockByDepth(){
+  const avail = CONFIG.blocks.filter(b=>b.minDepth<=state.depth);
+  return (Math.random()<.65) ? avail[avail.length-1] : pickOne(avail);
+}
+function spawnBlock(){
+  block = blockByDepth();
+  block.maxHp = block.hp;
+  const el=$('block');
+  el.className = block.cls;
+  el.style.animation='none'; void el.offsetWidth; el.style.animation='';
+  el.dataset.stage=0;
+  renderPips();
+  updateQuestText();
+}
+function renderPips(){
+  $('pips').innerHTML = '<i></i>'.repeat(Math.max(1,Math.ceil(block.maxHp)));
+}
+function updateQuestText(){
+  $('quest-text').textContent = mobActive
+    ? `${currentMob.name} подкрался! Ударь его мечом!`
+    : `⛏ Чтобы сломать «${block.name}», реши:`;
+}
+
+/* ---------------------- ГЕНЕРАТОР ПРИМЕРОВ ---------------------- */
+const Problems = {
+  last:null,
+  next(){
+    let a,b, guard=0;
+    do{
+      if(state.retry.length && Math.random()<.45){         // интервальное повторение ошибок
+        [a,b]=pickOne(state.retry).split('x').map(Number);
+      }else{ a=pickOne(state.tables); b=randInt(2,10); }
+      guard++;
+    }while(this.last && a===this.last.a && b===this.last.b && guard<5);
+    this.last={a,b};
+    const correct=a*b;
+    const options=shuffle([correct, ...this.distractors(a,b,correct)]);
+    return {a,b,correct,options};
+  },
+  distractors(a,b,c){
+    let cand=[c+a,c-a,c+b,c-b,(a+1)*b,(a-1)*b,a*(b+1),a*(b-1),c+10,c-10,c+2,c-2]
+      .filter(v=>v>0 && v!==c);
+    cand=[...new Set(cand)]; shuffle(cand);
+    const out=cand.slice(0,3);
+    while(out.length<3){ const v=c+randInt(-9,9); if(v>0&&v!==c&&!out.includes(v)) out.push(v); }
+    return out;
+  },
+  hint(a,b){
+    const s=Math.min(a,b), l=Math.max(a,b);
+    return s<=4 ? `Подсказка: ${a} × ${b} — это ${Array(s).fill(l).join(' + ')}`
+                : `Подсказка: вспомни таблицу × ${a}`;
+  }
+};
+function showProblem(){
+  problem=Problems.next(); wrongThisProblem=0;
+  $('hint').textContent='';
+  const eq=$('equation'); eq.classList.remove('solved');
+  eq.innerHTML=`${problem.a} × ${problem.b} = <span class="q">?</span>`;
+  const box=$('answers'); box.innerHTML='';
+  problem.options.forEach(v=>{
+    const btn=document.createElement('button');
+    btn.className='answer btn-mc'; btn.textContent=v;
+    btn.addEventListener('click',()=>onAnswer(btn,v));
+    box.appendChild(btn);
+  });
+}
+
+/* ---------------------- ЭФФЕКТЫ ---------------------- */
+function scenePos(el){
+  const s=$('scene').getBoundingClientRect(), r=el.getBoundingClientRect();
+  return {x:r.left-s.left+r.width/2, y:r.top-s.top+r.height/2};
+}
+function burst(el, colors, n=14){
+  const {x,y}=scenePos(el), sc=$('scene');
+  for(let i=0;i<n;i++){
+    const p=document.createElement('i'); p.className='particle';
+    const s=randInt(6,13);
+    p.style.cssText=`left:${x}px;top:${y}px;width:${s}px;height:${s}px;background:${pickOne(colors)}`;
+    p.style.setProperty('--dx', randInt(-110,110)+'px');
+    p.style.setProperty('--dy', -randInt(40,150)+'px');
+    sc.appendChild(p); setTimeout(()=>p.remove(),800);
+  }
+}
+function floatText(el,text,cls=''){
+  const {x,y}=scenePos(el), sc=$('scene');
+  const f=document.createElement('div');
+  f.className='float-text '+cls; f.textContent=text;
+  f.style.left=(x-40)+'px'; f.style.top=(y-40)+'px';
+  sc.appendChild(f); setTimeout(()=>f.remove(),1200);
+}
+const PRAISE=['Отлично!','Круто!','Гениально!','Ты настоящий шахтёр!','Бум! Так держать!','Вот это удар!','Умножение — твоя суперсила!'];
+function toast(msg){
+  const t=document.createElement('div'); t.className='toast'; t.textContent=msg;
+  $('toasts').appendChild(t); setTimeout(()=>t.remove(),2600);
+}
+function shakeScene(){ const s=$('scene'); s.classList.remove('shake'); void s.offsetWidth; s.classList.add('shake'); }
+
+/* ================================================================
+   ИГРА
+   ================================================================ */
+let currentMob=null;
+
+function onAnswer(btn,value){
+  if(busy) return;
+  state.totalAnswers++;
+  if(value===problem.correct){
+    state.correctAnswers++;
+    btn.classList.add('correct');
+    document.querySelectorAll('.answer').forEach(b=>b.disabled=true);
+    $('equation').classList.add('solved');
+    $('equation').innerHTML=`${problem.a} × ${problem.b} = ${problem.correct}`;
+    const key=`${problem.a}x${problem.b}`;
+    state.retry=state.retry.filter(k=>k!==key);
+    busy=true;
+    Sound.play('correct');
+    state.streak++;
+    addXP(10 + Math.min(state.streak,5)*2);
+    if(state.streak>0 && state.streak%5===0){ giveDiamonds(2,'🔥 Серия ×'+state.streak+'! +2 💎'); }
+    floatText($('block'), pickOne(PRAISE), 'good');
+    setTimeout(()=>{ mobActive ? defeatMob() : hitBlock(); }, 380);
+  }else{
+    btn.classList.add('cracked'); btn.disabled=true;
+    wrongThisProblem++;
+    state.streak=0;
+    const key=`${problem.a}x${problem.b}`;
+    if(!state.retry.includes(key)) state.retry.push(key);
+    Sound.play('wrong');
+    $('hint').textContent=Problems.hint(problem.a,problem.b);
+    if(mobActive){
+      const m=$('mob'); m.classList.remove('hop'); void m.offsetWidth; m.classList.add('hop');
+      toast(pickOne(['Зомби хихикает! Попробуй ещё!','Моб дразнится! Ты справишься!','Почти! Выбери другой блок!']));
+    }else{
+      $('block').dataset.stage=Math.min(3,(+$('block').dataset.stage||0)+1);
+      floatText($('block'),'Почти! Ещё разок 💪');
     }
+    renderHUD();
+  }
+  updateAccuracy();
+  save();
+}
+
+function hitBlock(){
+  const dmg=CONFIG.picks.find(p=>p.id===state.pick).dmg;
+  block.hp-=dmg;
+  swingTool(); Sound.play('dig'); shakeScene();
+  burst($('block'), blockColors(block.id));
+  const ratio=1-Math.max(0,block.hp)/block.maxHp;
+  $('block').dataset.stage=Math.min(3,Math.ceil(ratio*3));
+  const pips=$('pips').children;
+  for(let i=0;i<pips.length;i++) pips[i].classList.toggle('off', i>=Math.max(0,Math.ceil(block.hp)));
+  if(block.hp<=0) setTimeout(breakBlock,300);
+  else { state.sinceMob++; busy=false; maybeMob() ? startMob() : showProblem(); }
+}
+function blockColors(id){
+  return {grass:['#7a4f2a','#67b93c','#5c3a1e'], stone:['#8d8d8d','#6f6f6f'],
+    coal:['#1c1c1c','#8d8d8d'], iron:['#e2b183','#8d8d8d'], 
+    gold:['#ffc93c','#ffd96b','#ffe59a'], emerald:['#2ecc71','#58d68d','#7dffb0'],
+    redstone:['#e74c3c','#ec7063','#ff6b6b'],
+    diamond:['#43e0c0','#9ffef0','#8d8d8d']}[id];
+}
+function breakBlock(){
+  Sound.play('breakB');
+  burst($('block'), blockColors(block.id), 22);
+  $('block').classList.add('boom');
+  state.depth++;
+  
+  // Эффекты редких блоков
+  if(block.effect==='speed'){
+    state.streak = Math.min(state.streak + 2, 10);
+    floatText($('block'), '⚡ СКОРОСТЬ! +2 к серии', 'good');
+  }
+  
+  if(Math.random()<block.dia) giveDiamonds(randInt(1,block.diaMax));
+  CONFIG.blocks.forEach(b=>{
+    if(b.minDepth===state.depth) toast('⛏ Новая руда открыта: '+b.name.toUpperCase()+'!');
+  });
+  renderHUD();
+  setTimeout(()=>{
+    $('block').classList.remove('boom');
+    spawnBlock();
+    state.sinceMob++;
+    busy=false;
+    maybeMob() ? startMob() : showProblem();
+  }, 420);
+}
+function maybeMob(){
+  return !mobActive && state.sinceMob>=state.nextMobAt;
+}
+function startMob(){
+  mobActive=true; busy=false;
+  currentMob=pickOne(CONFIG.mobs);
+  $('mobSprite').innerHTML='';
+  $('mobSprite').appendChild(currentMob.id==='zombie'?Sprites.zombie():Sprites.creeper());
+  const m=$('mob'); m.classList.remove('leave','hop'); m.classList.add('enter');
+  $('mob-bubble').hidden=false;
+  renderTool('sword');
+  Sound.play('mob');
+  updateQuestText(); showProblem();
+}
+function defeatMob(){
+  Sound.play('hit'); swingTool();
+  $('mob-bubble').hidden=true;
+  const m=$('mob'); m.classList.remove('enter'); m.classList.add('leave');
+  floatText(m,'😵 💫','good');
+  toast(pickOne(currentMob.lines));
+  if(Math.random()<.5) giveDiamonds(1);
+  setTimeout(()=>{
+    mobActive=false;
+    state.sinceMob=0;
+    state.nextMobAt=randInt(CONFIG.mobEveryMin,CONFIG.mobEveryMax);
+    renderTool('pick');
+    updateQuestText(); showProblem(); busy=false;
+  },850);
+}
+function giveDiamonds(n,label){
+  state.diamonds+=n;
+  Sound.play('diamond');
+  floatText($('block'),'+'+n+' 💎','dia');
+  if(label) toast(label);
+  const d=$('hud-diamonds'); d.classList.remove('pop'); void d.offsetWidth; d.classList.add('pop');
+  renderHUD();
+}
+function addXP(n){
+  state.xp+=n; state.xpIntoLevel+=n;
+  floatText($('hud-xp'),'+'+n+' XP');
+  while(state.xpIntoLevel>=CONFIG.xpNeed(state.level)){
+    state.xpIntoLevel-=CONFIG.xpNeed(state.level);
+    state.level++;
+    const t=CONFIG.unlockByLevel[state.level];
+    let unlockTxt='Так держать, шахтёр!';
+    // ✨ Открываем новую таблицу только в режиме «Новичок» (×2 и ×3)
+    if(state.progression && t && !state.tables.includes(t)){
+      state.tables.push(t);
+      unlockTxt=`Открыта таблица × ${t}! Теперь копаем ещё умнее!`;
+    }
+    $('lu-num').textContent=state.level;
+    $('lu-text').textContent=unlockTxt;
+    $('levelup').hidden=false;
+    Sound.play('levelup');
+  }
+  renderHUD();
+}
+
+/* ---------------------- МАГАЗИН ---------------------- */
+const Shop={
+  tab:'picks',
+  open(){ $('shop').hidden=false; this.render(); },
+  close(){ $('shop').hidden=true; },
+  render(){
+    $('shop-dia').textContent=state.diamonds;
+    const grid=$('shop-grid'); grid.innerHTML='';
+    document.querySelectorAll('.shop-tabs .btn-mc').forEach(b=>b.style.outline=b.dataset.tab===this.tab?'3px solid var(--gold)':'');
+    const items=this.tab==='picks'?CONFIG.picks:CONFIG.skins;
+    const owned=this.tab==='picks'?state.ownedPicks:state.ownedSkins;
+    const equipped=this.tab==='picks'?state.pick:state.skin;
+    items.forEach(it=>{
+      const card=document.createElement('div'); card.className='item';
+      const icon=document.createElement('div'); icon.className='icon';
+      icon.appendChild(this.tab==='picks'?Sprites.pickaxe(it.color,5):Sprites.minerPreview(it));
+      card.appendChild(icon);
+      const name=document.createElement('div'); name.className='name'; name.textContent=it.name;
+      const desc=document.createElement('div'); desc.className='desc';
+      desc.textContent=this.tab==='picks'?`Сила удара: ${it.dmg}`:'Модный шахтёр';
+      card.append(name,desc);
+      if(owned.includes(it.id)){
+        if(equipped===it.id){
+          const e=document.createElement('div'); e.className='equipped'; e.textContent='✔ ВЫБРАНО'; card.appendChild(e);
+        }else{
+          const b=document.createElement('button'); b.className='btn-mc'; b.textContent='ВЫБРАТЬ';
+          b.onclick=()=>{ this.tab==='picks'?state.pick=it.id:state.skin=it.id; renderMiner(); Sound.play('buy'); save(); this.render(); };
+          card.appendChild(b);
+        }
+      }else{
+        const b=document.createElement('button'); b.className='btn-mc btn-gold'; b.textContent=`КУПИТЬ ЗА ${it.price} 💎`;
+        b.disabled=state.diamonds<it.price;
+        b.onclick=()=>{
+          state.diamonds-=it.price;
+          (this.tab==='picks'?state.ownedPicks:state.ownedSkins).push(it.id);
+          this.tab==='picks'?state.pick=it.id:state.skin=it.id;
+          renderMiner(); renderHUD(); Sound.play('buy'); save(); this.render();
+          toast('Покупка! '+it.name+' — твои!');
+        };
+        card.appendChild(b);
+      }
+      grid.appendChild(card);
+    });
+  }
+};
+
+/* ================================================================
+   ✨ НОВОЕ: ВЫБОР ТАБЛИЦ ×2…×9 (переключатели + пресеты)
+   ================================================================ */
+let chosenTables = new Set([2,3]); // по умолчанию — набор «Новичок»
+
+function refreshTableButtons(){
+  document.querySelectorAll('#tables-pick .tgl').forEach(b=>
+    b.classList.toggle('sel', chosenTables.has(+b.dataset.t)));
+}
+// Тап по таблице: включить/выключить (минимум одна должна остаться)
+document.querySelectorAll('#tables-pick .tgl').forEach(b=>{
+  b.addEventListener('click',()=>{
+    const t=+b.dataset.t;
+    if(chosenTables.has(t)){
+      if(chosenTables.size===1){ toast('Выбери хотя бы одну таблицу!'); return; }
+      chosenTables.delete(t);
+    }else{
+      chosenTables.add(t);
+    }
+    refreshTableButtons(); Sound.play('buy');
   });
 });
-</script>
+// Быстрые наборы
+document.querySelectorAll('.presets .btn-mc').forEach(b=>{
+  b.addEventListener('click',()=>{
+    chosenTables = new Set(b.dataset.preset.split(',').map(Number));
+    refreshTableButtons(); Sound.play('buy');
+  });
+});
 
+/* ---------------------- СТАРТ И СВЯЗКИ ---------------------- */
+function enterGame(){
+  $('screen-start').hidden=true; $('screen-game').hidden=false;
+  renderMiner(); renderHUD(); updateAccuracy(); spawnBlock(); showProblem();
+}
+$('btn-play').addEventListener('click',()=>{
+  Sound.init();
+  state=freshState([...chosenTables]);
+  state.nextMobAt=randInt(CONFIG.mobEveryMin,CONFIG.mobEveryMax);
+  save(); enterGame();
+  Sound.startMusic();
+});
+$('btn-continue').addEventListener('click',()=>{
+  Sound.init();
+  state=loadSave(); enterGame();
+  Sound.startMusic();
+});
+$('btn-lu-ok').addEventListener('click',()=>$('levelup').hidden=true);
+$('btn-shop').addEventListener('click',()=>Shop.open());
+$('btn-shop-close').addEventListener('click',()=>Shop.close());
+document.querySelectorAll('.shop-tabs .btn-mc').forEach(b=>b.addEventListener('click',()=>{Shop.tab=b.dataset.tab; Shop.render();}));
+$('btn-reset').addEventListener('click',()=>{
+  if(confirm('Точно сбросить весь прогресс?')){ localStorage.removeItem(CONFIG.saveKey); location.reload(); }
+});
+$('btn-mute').addEventListener('click',()=>{
+  state.muted=!state.muted; 
+  $('btn-mute').textContent=state.muted?'🔇':'🔊'; 
+  if(state.muted) Sound.stopMusic();
+  else Sound.startMusic();
+  save();
+});
+
+/* ---------------------- ЗАГРУЗКА ---------------------- */
+(function boot(){
+  const s=loadSave();
+  if(s){
+    $('btn-continue').hidden=false;
+    $('btn-continue').textContent=`⛏ ПРОДОЛЖИТЬ (ур. ${s.level}, 💎 ${s.diamonds}, глубина ${s.depth} м)`;
+    // ✨ ЗВУК: устанавливаем иконку кнопки звука при загрузке
+    $('btn-mute').textContent = s.muted ? '🔇' : '🔊';
+  }
+  refreshTableButtons();
+})();
+</script>
 </body>
 </html>
