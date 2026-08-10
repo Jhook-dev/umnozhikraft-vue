@@ -105,12 +105,20 @@ export const useGameStore = defineStore('game', {
 
     spawnBlock() {
       const avail = CONFIG.blocks.filter((b) => b.minDepth <= this.state.depth);
-      const blockData = Math.random() < 0.65 ? avail[avail.length - 1] : pickOne(avail);
-      this.block = { ...blockData, maxHp: blockData.hp, currentHp: blockData.hp, stage: 0 };
+      const blockData =
+        Math.random() < 0.65 ? avail[avail.length - 1] : pickOne(avail);
+      this.block = {
+        ...blockData,
+        maxHp: blockData.hp,
+        currentHp: blockData.hp,
+        stage: 0,
+      };
     },
 
     generateProblem() {
-      let a, b, guard = 0;
+      let a,
+        b,
+        guard = 0;
       do {
         if (this.state.retry.length && Math.random() < 0.45) {
           [a, b] = pickOne(this.state.retry).split('x').map(Number);
@@ -119,10 +127,30 @@ export const useGameStore = defineStore('game', {
           b = randInt(2, 10);
         }
         guard++;
-      } while (this.problem && a === this.problem.a && b === this.problem.b && guard < 5);
+      } while (
+        this.problem &&
+        a === this.problem.a &&
+        b === this.problem.b &&
+        guard < 5
+      );
 
       const correct = a * b;
-      const distractors = shuffle([correct + a, correct - a, correct + b, correct - b, (a + 1) * b, (a - 1) * b, a * (b + 1), a * (b - 1), correct + 10, correct - 10, correct + 2, correct - 2].filter(v => v > 0 && v !== correct));
+      const distractors = shuffle(
+        [
+          correct + a,
+          correct - a,
+          correct + b,
+          correct - b,
+          (a + 1) * b,
+          (a - 1) * b,
+          a * (b + 1),
+          a * (b - 1),
+          correct + 10,
+          correct - 10,
+          correct + 2,
+          correct - 2,
+        ].filter((v) => v > 0 && v !== correct),
+      );
       const options = shuffle([correct, ...distractors.slice(0, 3)]);
 
       this.problem = { a, b, correct, options };
@@ -155,6 +183,19 @@ export const useGameStore = defineStore('game', {
         this.state.streak = 0;
         const key = `${this.problem.a}x${this.problem.b}`;
         if (!this.state.retry.includes(key)) this.state.retry.push(key);
+
+        // Уведомление о неправильном ответе
+        if (this.mobActive) {
+          const lines = [
+            'Зомби хихикает! Попробуй ещё!',
+            'Моб дразнится! Ты справишься!',
+            'Почти! Выбери другой блок!',
+          ];
+          const randomLine = lines[Math.floor(Math.random() * lines.length)];
+          this.toast(randomLine);
+        } else {
+          this.toast('Почти! Ещё разок 💪');
+        }
       }
       this.save();
     },
@@ -162,7 +203,12 @@ export const useGameStore = defineStore('game', {
     hitBlock() {
       const dmg = CONFIG.picks.find((p) => p.id === this.state.pick).dmg;
       this.block.currentHp -= dmg;
-      this.block.stage = Math.min(3, Math.ceil((1 - Math.max(0, this.block.currentHp) / this.block.maxHp) * 3));
+      this.block.stage = Math.min(
+        3,
+        Math.ceil(
+          (1 - Math.max(0, this.block.currentHp) / this.block.maxHp) * 3,
+        ),
+      );
 
       // Звук удара по блоку
       soundManager.play('dig');
@@ -184,7 +230,7 @@ export const useGameStore = defineStore('game', {
       this.state.depth++;
 
       // Проверка на открытие новой руды
-      const newOre = CONFIG.blocks.find(b => b.minDepth === this.state.depth);
+      const newOre = CONFIG.blocks.find((b) => b.minDepth === this.state.depth);
       if (newOre) {
         this.toast('⛏ Новая руда открыта: ' + newOre.name.toUpperCase() + '!');
       }
@@ -196,7 +242,7 @@ export const useGameStore = defineStore('game', {
       }
       // Звук разрушения блока
       soundManager.play('breakB');
-      
+
       this.save();
       setTimeout(() => {
         this.spawnBlock();
@@ -315,7 +361,7 @@ export const useGameStore = defineStore('game', {
       const id = Date.now();
       this.toasts.push({ id, message: msg });
       setTimeout(() => {
-        this.toasts = this.toasts.filter(t => t.id !== id);
+        this.toasts = this.toasts.filter((t) => t.id !== id);
       }, 2600);
     },
 
