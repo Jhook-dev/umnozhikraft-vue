@@ -1,7 +1,11 @@
 <template>
   <div id="app">
     <StartPage v-if="gameStore.status === 'start'" />
-    <GamePage v-else />
+    <GamePage v-else>
+      <template #hud-actions>
+        <MusicPlayer />
+      </template>
+    </GamePage>
     <ShopModal v-if="gameStore.showShop" />
     <LevelUpModal v-if="gameStore.showLevelUp" />
   </div>
@@ -14,6 +18,7 @@ import StartPage from '@/pages/start/ui/StartPage.vue';
 import GamePage from '@/pages/game/ui/GamePage.vue';
 import ShopModal from '@/features/shop/ui/ShopModal.vue';
 import LevelUpModal from '@/features/mining/ui/LevelUpModal.vue';
+import MusicPlayer from '@/features/music/ui/MusicPlayer.vue';
 
 const gameStore = useGameStore();
 

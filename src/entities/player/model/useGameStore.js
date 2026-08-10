@@ -38,6 +38,9 @@ export const useGameStore = defineStore('game', {
     showShop: false,
     showLevelUp: false,
     shopTab: 'picks',
+    musicMuted: false,
+    musicVolume: 0.5,
+    currentTrack: 0,
   }),
 
   getters: {
