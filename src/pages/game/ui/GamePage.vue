@@ -71,6 +71,7 @@ import { ref, computed, onMounted, watch } from 'vue';
 import { useGameStore } from '@/entities/player/model/useGameStore';
 import { CONFIG } from '@/shared/config/game';
 import { getHint } from '@/shared/lib/utils';
+import { soundManager } from '@/shared/lib/soundManager';
 
 const gameStore = useGameStore();
 
@@ -104,8 +105,16 @@ const diamondPop = ref(false);
 const mobClass = ref('');
 const currentSkin = computed(() => CONFIG.skins.find(s => s.id === gameStore.state?.skin) || CONFIG.skins[0]);
 
-const openShop = () => gameStore.openShop();
-const toggleMute = () => gameStore.toggleMute();
+const openShop = () => {
+  soundManager.play('buy');
+  gameStore.openShop();
+};
+
+const toggleMute = () => {
+  gameStore.toggleMute();
+  // Обновляем состояние в soundManager
+  soundManager.setMuted(gameStore.state?.muted || false);
+};
 
 const isCracked = (opt) => crackedAnswers.value.has(opt);
 
@@ -115,10 +124,12 @@ const handleAnswer = (value) => {
   if (value === problem.value.correct) {
     answered.value = true;
     answerCorrect.value = true;
+    soundManager.play('correct');
     gameStore.answer(value);
   } else {
     crackedAnswers.value.add(value);
     hint.value = getHint(problem.value.a, problem.value.b);
+    soundManager.play('wrong');
     gameStore.answer(value);
     
     if (mobActive.value) {

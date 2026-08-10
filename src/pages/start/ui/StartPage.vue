@@ -20,16 +20,30 @@
 </template>
 
 <script setup>
-import { computed } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useGameStore } from '@/entities/player/model/useGameStore';
+import { soundManager } from '@/shared/lib/soundManager';
 import TableSelector from '@/features/selection/ui/TableSelector.vue';
 
 const gameStore = useGameStore();
 
 const hasSave = computed(() => gameStore.hasSave);
 
-const startNewGame = () => gameStore.startNewGame();
-const continueGame = () => gameStore.continueGame();
+// Инициализируем звук при загрузке страницы (после первого клика пользователя)
+const initSound = () => {
+  soundManager.init();
+  soundManager.setMuted(gameStore.state?.muted || false);
+};
+
+const startNewGame = () => {
+  initSound();
+  gameStore.startNewGame();
+};
+
+const continueGame = () => {
+  initSound();
+  gameStore.continueGame();
+};
 </script>
 
 <style scoped>
