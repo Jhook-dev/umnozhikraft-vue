@@ -12,33 +12,37 @@ target/
 .env.local
 .env.*
 
-# IDE specific
+# IDE files
 .vscode/
 .idea/
-
-# Python cache
-__pycache__/
-*.pyc
-*.pyo
-*.pyd
+*.swp
+*.swo
 
 # Logs
 *.log
 
-# Temporary files
-*.tmp
-*.swp
-*~
+# Python cache (if present)
+__pycache__/
+*.pyc
+*.pyo
 
-# OS generated files
+# Temp files
+*.tmp
+
+# OS files
 .DS_Store
 Thumbs.db
 
-# Coverage reports
+# Coverage
 coverage/
 htmlcov/
 .coverage
 
-# Local configuration
-*.local
+# Package manager
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Vite specific
+.vite/
 ```
