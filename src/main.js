@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import './style.css'
+import './app/styles/game.css'
 import App from './App.vue'
 import pinia from './app/main.js'
 
