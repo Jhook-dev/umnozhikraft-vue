@@ -1,31 +1,3 @@
-```
-# Build artifacts
-dist/
-build/
-*.css
-*.js
-*.svg
-*.html
-*.mp3
+```vue
 
-# Dependencies
-node_modules/
-
-# Environment
-.env
-.env.local
-*.env.*
-
-# Editors
-.vscode/
-.idea/
-
-# Logs and temp files
-*.log
-*.tmp
-*.swp
-
-# OS specific
-.DS_Store
-Thumbs.db
 ```
