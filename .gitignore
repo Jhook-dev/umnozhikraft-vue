@@ -1,4 +1,3 @@
-```
 # Build artifacts
 dist/
 build/
@@ -28,4 +27,3 @@ node_modules/
 # OS specific
 .DS_Store
 Thumbs.db
-```
