@@ -12,6 +12,7 @@
       <button class="btn-mc" id="btn-mute" :title="muted ? 'Включить звук' : 'Звук'" @click="toggleMute">
         {{ muted ? '🔇' : '🔊' }}
       </button>
+      <slot name="hud-actions"></slot>
     </header>
 
     <div id="scene" :class="{ shake: isShaking }">
@@ -26,7 +27,7 @@
       <div id="block-wrap">
         <div 
           id="block" 
-          :class="['block--' + blockType, { 'stage-' + blockStage, boom: isBoom }]"
+          :class="['block--' + blockType, 'stage-' + blockStage, { boom: isBoom }]"
         >
           <div class="cracks"><i></i><i></i><i></i></div>
         </div>
