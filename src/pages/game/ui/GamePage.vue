@@ -72,6 +72,7 @@ import { useGameStore } from '@/entities/player/model/useGameStore';
 import { CONFIG } from '@/shared/config/game';
 import { getHint } from '@/shared/lib/utils';
 import { soundManager } from '@/shared/lib/soundManager';
+import { Sprites } from '@/shared/lib/sprites';
 
 const gameStore = useGameStore();
 
@@ -104,6 +105,8 @@ const isBoom = ref(false);
 const diamondPop = ref(false);
 const mobClass = ref('');
 const currentSkin = computed(() => CONFIG.skins.find(s => s.id === gameStore.state?.skin) || CONFIG.skins[0]);
+const minerSpriteEl = ref(null);
+const toolEl = ref(null);
 
 const openShop = () => {
   soundManager.play('buy');
@@ -150,8 +153,45 @@ watch([blockType, blockStage, problem], () => {
   hint.value = '';
 });
 
+// Watch for mob changes and render mob sprite
+watch(mobActive, (isActive) => {
+  const mobSpriteEl = document.getElementById('mobSprite');
+  if (isActive && mobSpriteEl && gameStore.currentMob) {
+    mobSpriteEl.innerHTML = '';
+    if (gameStore.currentMob.id === 'zombie') {
+      mobSpriteEl.appendChild(Sprites.zombie());
+    } else {
+      mobSpriteEl.appendChild(Sprites.creeper());
+    }
+  }
+}, { immediate: true });
+
+// Render miner sprite on mount
 onMounted(() => {
-  // Initialize miner sprite
+  const minerSpriteContainer = document.getElementById('minerSprite');
+  if (minerSpriteContainer) {
+    minerSpriteContainer.innerHTML = '';
+    minerSpriteContainer.appendChild(Sprites.miner(currentSkin.value));
+  }
+  
+  // Render tool
+  const toolContainer = document.getElementById('tool');
+  if (toolContainer) {
+    toolContainer.innerHTML = '';
+    const pick = CONFIG.picks.find(p => p.id === gameStore.state?.pick);
+    if (pick) {
+      toolContainer.appendChild(Sprites.pickaxe(pick.color));
+    }
+  }
+});
+
+// Watch for skin changes
+watch(currentSkin, (newSkin) => {
+  const minerSpriteContainer = document.getElementById('minerSprite');
+  if (minerSpriteContainer) {
+    minerSpriteContainer.innerHTML = '';
+    minerSpriteContainer.appendChild(Sprites.miner(newSkin));
+  }
 });
 </script>
 

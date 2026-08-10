@@ -8,6 +8,7 @@
     </GamePage>
     <ShopModal v-if="gameStore.showShop" />
     <LevelUpModal v-if="gameStore.showLevelUp" />
+    <ToastContainer />
   </div>
 </template>
 
@@ -19,6 +20,7 @@ import GamePage from '@/pages/game/ui/GamePage.vue';
 import ShopModal from '@/features/shop/ui/ShopModal.vue';
 import LevelUpModal from '@/features/mining/ui/LevelUpModal.vue';
 import MusicPlayer from '@/features/music/ui/MusicPlayer.vue';
+import ToastContainer from '@/features/notification/ui/ToastContainer.vue';
 
 const gameStore = useGameStore();
 

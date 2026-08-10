@@ -42,6 +42,7 @@ export const useGameStore = defineStore('game', {
     musicMuted: false,
     musicVolume: 0.5,
     currentTrack: 0,
+    toasts: [],
   }),
 
   getters: {
@@ -181,6 +182,13 @@ export const useGameStore = defineStore('game', {
 
     breakBlock() {
       this.state.depth++;
+
+      // Проверка на открытие новой руды
+      const newOre = CONFIG.blocks.find(b => b.minDepth === this.state.depth);
+      if (newOre) {
+        this.toast('⛏ Новая руда открыта: ' + newOre.name.toUpperCase() + '!');
+      }
+
       if (Math.random() < this.block.dia) {
         // Звук нахождения алмаза
         soundManager.play('diamond');
@@ -212,6 +220,7 @@ export const useGameStore = defineStore('game', {
       this.currentMob = pickOne(CONFIG.mobs);
       // Звук появления моба
       soundManager.play('mob');
+      this.toast(pickOne(this.currentMob.lines));
       this.generateProblem();
     },
 
@@ -300,6 +309,18 @@ export const useGameStore = defineStore('game', {
 
     setShopTab(tab) {
       this.shopTab = tab;
+    },
+
+    toast(msg) {
+      const id = Date.now();
+      this.toasts.push({ id, message: msg });
+      setTimeout(() => {
+        this.toasts = this.toasts.filter(t => t.id !== id);
+      }, 2600);
+    },
+
+    showToast(msg) {
+      this.toast(msg);
     },
   },
 });
