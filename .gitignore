@@ -1,3 +1,7 @@
-Nothing should be ignored in this case, as the added files are all music assets (.mp3 files) which are legitimate project files to be tracked in version control. No build artifacts, dependencies, or temporary files are present in the changes.
+```
+# Dependencies
+node_modules/
 
-Output: (empty)
+# Vite build artifacts
+node_modules/.vite/
+```
