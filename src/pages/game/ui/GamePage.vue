@@ -67,7 +67,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useGameStore } from '@/entities/player/model/useGameStore';
 import { CONFIG } from '@/shared/config/game';
 import { getHint } from '@/shared/lib/utils';
@@ -131,7 +131,14 @@ const handleAnswer = (value) => {
   }
 };
 
-// Watch for block changes to reset answer state
+// Reset answer state when block or problem changes
+watch([blockType, blockStage, problem], () => {
+  answered.value = false;
+  answerCorrect.value = false;
+  crackedAnswers.value.clear();
+  hint.value = '';
+});
+
 onMounted(() => {
   // Initialize miner sprite
 });
